@@ -1,4 +1,5 @@
 import '../../node_modules/materialize-css/dist/css/materialize.min.css';
+import '../../node_modules/materialize-css/dist/js/materialize.min.js';
 
 import React, { Component } from 'react';
 import logo from '../logo.svg';
@@ -9,41 +10,39 @@ import Guess from '../Guess/Guess';
 
 class App extends Component {
 
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      playerMod : 0
+  constructor(props){
+        super(props);
+        this.state = {
+            player : 0
+        }
     }
-  }
 
-  render() {
-    let playMod;
+    render(){
+        let playMod;
+        switch (this.state.player) {
+            case 1:
+                playMod = <Draw/>
+                break;
+            case 2:
+                playMod = <Guess/>
+               break;
+            default:
+                playMod = (<div className="flex-box">
+                              <h1 className='myTitle'>Drawing and Guessing</h1>
+                              <div className='Draw'><a className='waves-effect waves-light btn'
+                              onClick={()=>this.setState({player:1})} title="Want to Draw">Want to Draw</a></div>
+                              <div className='Guess'><a className='waves-effect waves-light btn'
+                              onClick={()=>this.setState({player:2})} title="Want to Guess">Want to Guess</a></div>
+                            </div>)
+        }
 
-    switch(this.state.player) {
-      case 1:
-        playMod = <Draw />;
-        break;
+        return (
+          <div className='App card-panel blue lighten-4 row'>
+            {playMod}
+          </div>
 
-      case 2:
-        playMod = <Guess />;
-        break;
-      
-      default:
-        playMod = (<div>
-          <h1>Painting and Guessing</h1>
-          <div><a className="Draw waves-effect waves-light btn pulse card-panel red lighten-1" onClick={()=>this.setState({playerMod:1})}>Want to Draw</a></div>
-          <div><a className="Guess waves-effect waves-light btn pulse card-panel red lighten-1" onClick={()=>this.setState({playerMod:2})}>Want to Guess</a></div>
-        </div>)
+        );
     }
-    
-
-    return (
-      <div className="App row">
-        <div className='Paint col s12 card-panel cyan lighten-2'>{playMod}</div>
-      </div>
-    );
-  }
 }
 
 export default App;

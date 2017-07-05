@@ -1,5 +1,5 @@
 .App {
-  text-align: center;
+  height: 1000px;
 }
 
 .Paint{
@@ -9,9 +9,17 @@
 .Draw{
   margin-bottom: 30px;
   margin-top: 250px;
-  
+  margin-left: 45%;
+}
+
+.flex-box{
+
+}
+
+.myTitle{
+  margin-left: 29%;
 }
 
 .Guess{
-
+  margin-left: 45%;
 }
