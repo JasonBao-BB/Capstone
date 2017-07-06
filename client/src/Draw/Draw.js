@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import './Draw.css';
 
+import io from 'socket.io-client';
+
 class Draw extends Component {
 
 
@@ -15,7 +17,7 @@ class Draw extends Component {
             startX : 0,
             startY : 0,
             endX : 0,
-            endY : 0
+            endY : 0,
         }
 
         this.mouseLeave = this.mouseLeave.bind(this);
@@ -27,7 +29,7 @@ class Draw extends Component {
     }
 
     componentDidMount(){
-        this.ready();
+        this.init();
     }
 
     mousePressDown(e){
@@ -55,7 +57,7 @@ class Draw extends Component {
     }
 
     drawing(x, y, isDown) {
-        var ctx,timer;
+        var ctx;
         if (isDown) {
             ctx = this.state.ctx;
             ctx.beginPath();
@@ -75,6 +77,7 @@ class Draw extends Component {
     }
 
     drawUpdate(path){
+        const socket = io('http://localhost:3000');
         let change = this.hasProps('change');
         if(change){
             change({
@@ -82,7 +85,7 @@ class Draw extends Component {
             });
         }
 
-        this.state.socket.emit('drawPath',{
+        socket.emit('drawPath',{
             startX : this.state.startX,
             startY : this.state.startY,
             endX : path.x,
@@ -93,30 +96,28 @@ class Draw extends Component {
     }
 
     resetBoard() {
+      const socket = io('http://localhost:3000');
       console.log("Reset board");
       var ctx = this.state.ctx;
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-      //this.state.socket.send('clear');
+     
+      socket.send('clear');
     }
 
-    ready() {
-        // let ready = this.hasProps('ready')
+    init() {
+        let ready = this.hasProps('ready')
         let myCanvas = this.refs.myCanvas
-        //     socket;
-        // if(ready){
-        //     socket = ready();
-        //     this.setState({
-        //         socket : socket
-        //     });
-        //     socket.send('getKeyWord');
-        //     socket.on('keyword', (keyword)=>{
-        //         this.setState({
-        //             keyword
-        //         })
-        //     })
-        // }
-        myCanvas = this.refs.myCanvas;
+        const socket = io('http://localhost:3000');
+
+        if(ready){
+            socket.send('getKeyWord');
+            socket.on('keyword', (keyword)=>{
+                this.setState({
+                    keyword
+                })
+            });
+        }
         this.setState({
             ctx : myCanvas.getContext("2d")
         });
@@ -146,6 +147,7 @@ class Draw extends Component {
     render() {
         return(
             <div className='row container'>
+                <h1>Drawing</h1>
                 <div className='keyWord col s12'>
                     Drawing:<span>{this.state.keyword}</span>
                 </div>

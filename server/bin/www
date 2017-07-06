@@ -20,6 +20,13 @@ app.set('port', port);
  */
 
 var server = http.createServer(app);
+var socketIO = require('socket.io');
+var io = socketIO();
+
+io.attach(server);
+
+var drawService = require('../service/drawService.js')(io);
+
 
 /**
  * Listen on provided port, on all network interfaces.
