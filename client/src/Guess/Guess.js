@@ -16,6 +16,8 @@ class Guess extends Component {
             endX : 0,
             endY : 0
         }
+
+        this.drawing = this.drawing.bind(this);
     }
 
     componentDidMount(){
@@ -38,13 +40,17 @@ class Guess extends Component {
     init() {
         let ready = this.hasProps('ready')
         let myCanvas = this.refs.myCanvas
-        const socket = io('http://localhost:3000');
+        var socket;
 
         this.setState({
             ctx : myCanvas.getContext("2d")
         });
 
         if(ready){
+            socket = io();
+            this.setState({
+                socket:socket
+            });
             socket.send('getKeyWord');
             
             socket.on('showPath', (path)=>{
@@ -56,6 +62,9 @@ class Guess extends Component {
                     path.color,
                     path.thickness
                 );
+
+                console.log('正在移动鼠标： '+ path);
+
             });
 
             socket.on('answer', (data)=>{
@@ -68,6 +77,7 @@ class Guess extends Component {
                         alert('Guessing more')
                         break;
                 }
+                console.log('大神的答案:'+ data);
             });
 
             socket.on('resetBoard', ()=>{
@@ -99,8 +109,6 @@ class Guess extends Component {
     }
 
     render() {
-        const socket = io('http://localhost:3000');
-
         return (
             <div className='container row'>
                 <h1>Guessing</h1>
@@ -119,7 +127,7 @@ class Guess extends Component {
                 </div>
 
                 <div className='col s12'>
-                    <a className="waves-effect waves-light btn" onClick={socket.emit('submit', this.state.keyword)}>Submit</a>
+                    <a className="waves-effect waves-light btn" onClick={()=>this.state.socket.emit('submit', this.state.keyword)}>Submit</a>
                 </div>
             </div>
         );

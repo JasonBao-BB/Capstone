@@ -5,9 +5,10 @@ module.exports = function(io) {
     var guessWord = 'Cat';
 
     io.on('connection', function(socket) {
-    //接收path
+
     socket.on('drawPath', function(data) {
         socket.broadcast.emit('showPath', data);
+        console.log('收到了白板的更新，并且发送给其他的'+ data);
     });
 
     socket.on('submit', function(keyword) {

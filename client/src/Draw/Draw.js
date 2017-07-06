@@ -30,6 +30,8 @@ class Draw extends Component {
 
     componentDidMount(){
         this.init();
+
+
     }
 
     mousePressDown(e){
@@ -77,7 +79,6 @@ class Draw extends Component {
     }
 
     drawUpdate(path){
-        const socket = io('http://localhost:3000');
         let change = this.hasProps('change');
         if(change){
             change({
@@ -85,7 +86,7 @@ class Draw extends Component {
             });
         }
 
-        socket.emit('drawPath',{
+        this.state.socket.emit('drawPath',{
             startX : this.state.startX,
             startY : this.state.startY,
             endX : path.x,
@@ -96,26 +97,30 @@ class Draw extends Component {
     }
 
     resetBoard() {
-      const socket = io('http://localhost:3000');
       console.log("Reset board");
       var ctx = this.state.ctx;
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
      
-      socket.send('clear');
+      this.state.socket.send('clear');
     }
 
     init() {
         let ready = this.hasProps('ready')
         let myCanvas = this.refs.myCanvas
-        const socket = io('http://localhost:3000');
+        let socket;
 
         if(ready){
+            socket = io();
+            this.setState({
+                socket : socket
+            });
             socket.send('getKeyWord');
             socket.on('keyword', (keyword)=>{
                 this.setState({
                     keyword
-                })
+                });
+                console.log('设置的关键字为: '+ keyword);
             });
         }
         this.setState({
