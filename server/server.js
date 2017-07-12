@@ -5,7 +5,9 @@ var app = express();
 var server = require('http').createServer(app);
 var io = require('socket.io')(server);
 
-var KEYWORD = 'Cat';
+var KEYWORD = '猫';
+
+var users=[];
 
 app.use(express.static(path.join(__dirname, '../client/build/')));
 app.use('/static', express.static(path.join(__dirname, '../client/build/static/')));
@@ -17,6 +19,8 @@ app.get('/', function(req, res) {
 io.on('connection', function(socket) {
     console.log("Connecting");
 
+
+    //Drawing and Guessing
     socket.on('drawing', function(data) {
         socket.broadcast.emit('drawing', data);
     });
@@ -40,7 +44,25 @@ io.on('connection', function(socket) {
         }
     });
 
-    socket.on('disconnect', function() {});
+    //Disconnect
+    socket.on('disconnect', function() {
+        users.splice(socket.usersIndex,1);
+        socket.broadcast.emit('system', socket.nickname, users.length, 'logout');
+    });
+
+    //Login
+    socket.on('login', function(nickname){
+        console.log('接收到用户信息');
+        if(users.indexOf(nickname) > -1) {
+            socket.emit('nickExisted');
+        } else {
+            socket.usersIndex = users.length;
+            socket.nickname = nickname;
+            users.push(nickname);
+            socket.emit('loginSuccess');
+            io.sockets.emit('system', nickname, users.length, 'login');
+        };
+    });
 });
 
 

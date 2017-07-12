@@ -88,6 +88,12 @@ class Guess extends Component {
 
     }
 
+    resetBoard() {
+        var ctx = this.state.ctx;
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    }
+
     render() {
         return (
             <div className='container row'>

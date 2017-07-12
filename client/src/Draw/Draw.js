@@ -3,6 +3,7 @@ import './Draw.css';
 
 import io from 'socket.io-client';
 
+import Chat from '../Chat/Chat';
 class Draw extends Component {
 
 
@@ -13,7 +14,9 @@ class Draw extends Component {
             ctx: null,
             drawing: false,
             thickness: 4,
-            color: 'black'
+            color: 'black',
+            beginX: 0,
+            beginY: 0
         }
 
         //this.mouseLeave = this.mouseLeave.bind(this);
@@ -34,25 +37,40 @@ class Draw extends Component {
         this.setState({
             drawing: true,
         });
-        this.state.ctx.x = e.clientX;
-        this.state.ctx.y = e.clientY;
+        //this.state.ctx.x = e.clientX;
+        //this.state.ctx.y = e.clientY;
+
+        this.setState({
+            beginX: e.clientX,
+            beginY: e.clientY
+        });
     }
     //松开鼠标
     mousePressUp(e) {
         if (!this.state.drawing) {
             return;
         }
-        this.state.drawing = false;
-        this.drawLine(this.state.ctx.x, this.state.ctx.y, e.clientX, e.clientY, this.state.color,this.state.thickness, true);
+        //this.state.drawing = false;
+        this.setState({
+            drawing: false
+        });
+        //this.drawLine(this.state.ctx.x, this.state.ctx.y, e.clientX, e.clientY, this.state.color,this.state.thickness, true);
+        this.drawLine(this.state.beginX, this.state.beginY, e.clientX, e.clientY, this.state.color, this.state.thickness, true);
     }
+
     //移动鼠标
     mouseMove(e) {
         if (!this.state.drawing) {
             return;
         }
-        this.drawLine(this.state.ctx.x, this.state.ctx.y, e.clientX, e.clientY, this.state.color,this.state.thickness, true);
-        this.state.ctx.x = e.clientX;
-        this.state.ctx.y = e.clientY;
+        //this.drawLine(this.state.ctx.x, this.state.ctx.y, e.clientX, e.clientY, this.state.color,this.state.thickness, true);
+        this.drawLine(this.state.beginX, this.state.beginY, e.clientX, e.clientY, this.state.color, this.state.thickness, true);
+        //this.state.ctx.x = e.clientX;
+        //this.state.ctx.y = e.clientY;
+        this.setState({
+            beginX: e.clientX,
+            beginY: e.clientY
+        });
     }
     //画线
     drawLine(x0, y0, x1, y1, color, thickness, emit) {
@@ -77,7 +95,7 @@ class Draw extends Component {
             x1: x1 / w,
             y1: y1 / h,
             color: color,
-            thickness : thickness
+            thickness: thickness
         });
     }
     //重制画板
@@ -119,51 +137,60 @@ class Draw extends Component {
     render() {
         return (
             <div className='row container'>
-                <h1>Drawing</h1>
+                <h1 className='col s12'>Drawing</h1>
+
                 <div className='keyWord col s12'>
                     Drawing:<span>{this.state.keyword}</span>
                 </div>
-                <canvas className='card-panel white col s12' ref='myCanvas'
-                    onMouseDown={this.mousePressDown}
-                    onMouseMove={this.mouseMove}
-                    onMouseUp={this.mousePressUp}
-                    onMouseLeave={this.mousePressUp}
-                    width="800"
-                    height="600"
-                    style={{ border: '1px solid #ccc' }}>
-                </canvas>
 
-                <div className='tool-bar row'>
-                    <div className='reset-btn col s12'>
-                        <a onClick={this.resetBoard} className="waves-effect waves-light btn">Reset</a>
-                    </div>
+                <div className='paint-area card-panel blue lighten-4 col s10'>
+                    <canvas className='card-panel white col s12' ref='myCanvas'
+                        onMouseDown={this.mousePressDown}
+                        onMouseMove={this.mouseMove}
+                        onMouseUp={this.mousePressUp}
+                        onMouseLeave={this.mousePressUp}
+                        width="800"
+                        height="600"
+                        style={{ border: '1px solid #ccc' }}>
+                    </canvas>
 
-                    <div className='pencil-thikness col s3'>
-                        <div className='chip'>Thickness</div>
-                        <select value={this.state.thickness} onChange={(e) => this.setState({ thickness: e.target.value })} className="browser-default">
-                            <option value="" disabled selected>Thickness</option>
-                            <option value="1">#1</option>
-                            <option value="3">#3</option>
-                            <option value="5">#5</option>
-                            <option value="7">#7</option>
-                            <option value="9">#9</option>
-                            <option value="11">#11</option>
-                        </select>
-                    </div>
+                    <div className='tool-bar row'>
+                        <div className='reset-btn col s12'>
+                            <a onClick={this.resetBoard} className="waves-effect waves-light btn">Reset</a>
+                        </div>
 
-                    <div className='pencil-color col s3'>
-                        <div className='chip'>Color</div>
-                        <select value={this.state.color} onChange={(e) => this.setState({ color: e.target.value })} className="browser-default">
-                            <option value="" disabled selected>Color</option>
-                            <option value="black">Black</option>
-                            <option value="blue">Blue</option>
-                            <option value="red">Red</option>
-                            <option value="green">Green</option>
-                            <option value="yellow">Yellow</option>
-                            <option value="gray">Gray</option>
-                        </select>
+                        <div className='pencil-thikness col s3'>
+                            <div className='chip'>Thickness</div>
+                            <select value={this.state.thickness} onChange={(e) => this.setState({ thickness: e.target.value })} className="browser-default">
+                                <option value="" disabled selected>Thickness</option>
+                                <option value="1">#1</option>
+                                <option value="3">#3</option>
+                                <option value="5">#5</option>
+                                <option value="7">#7</option>
+                                <option value="9">#9</option>
+                                <option value="11">#11</option>
+                            </select>
+                        </div>
+
+                        <div className='pencil-color col s3'>
+                            <div className='chip'>Color</div>
+                            <select value={this.state.color} onChange={(e) => this.setState({ color: e.target.value })} className="browser-default">
+                                <option value="" disabled selected>Color</option>
+                                <option value="black">Black</option>
+                                <option value="blue">Blue</option>
+                                <option value="red">Red</option>
+                                <option value="green">Green</option>
+                                <option value="yellow">Yellow</option>
+                                <option value="gray">Gray</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
+
+                <div className='col s2'>
+                    <Chat />
+                </div>
+
 
             </div>
 
