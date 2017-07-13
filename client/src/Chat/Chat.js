@@ -29,6 +29,8 @@ export default class ChatRoom extends Component {
 
     componentDidMount() {
         this.ready();
+        console.log(this.state.myName);
+        
     }
 
     // 处理在线人数及用户名
@@ -96,7 +98,7 @@ export default class ChatRoom extends Component {
     }
 
     handleLogout() {
-        this.location.reload();
+        window.location.reload();
     }
     // 开始监控socket
     ready() {
@@ -114,15 +116,24 @@ export default class ChatRoom extends Component {
 
     render() {
         return (
-            <div className="chat-room">
+            <div className="card-panel blue lighten-4 chat-room">
                 <div className="welcome">
                     <div className="room-name">Welcome, {this.state.myName}</div>
-                    <button onClick={this.handleLogout.bind(this)}>logout</button>
+                    <a className="waves-effect waves-light btn" onClick={this.handleLogout.bind(this)}>Lougout</a>
                 </div>
-                <RoomStatus onlineCount={this.state.onlineCount} userhtml={this.state.userhtml} />
-                <div ref="chatArea">
-                    <Messages messages={this.state.messages} myId={this.state.myId} />
-                    <ChatInput myId={this.state.myId} myName={this.state.myName} socket={this.state.socket} />
+                <div>
+                    <RoomStatus onlineCount={this.state.onlineCount} userhtml={this.state.userhtml}/>
+                </div>
+                <div className='chatArea' ref="chatArea">
+
+                    <div className='chatHistory card-panel white'>
+                        <Messages messages={this.state.messages} myId={this.state.myId} />
+                    </div>
+
+                    <div className='userInput'>
+                        <ChatInput myId={this.state.myId} myName={this.state.myName} socket={this.state.socket} />
+                    </div>
+                    
                 </div>
             </div>)
     }

@@ -5,18 +5,22 @@ import io from 'socket.io-client';
 
 export default class Messages extends Component {
 
-    // 组件更新时监控窗口滚动条，保持其在最下
+    constructor(props){
+        super(props);
+        console.log('在message里面的id是：'+this.refs.myId);
+    }
+
     componentDidUpdate() {
         const messageList = ReactDOM.findDOMNode(this.refs.messages);
-        window.scrollTo(0, messageList.clientHeight + 50);
     }
+
     render() {
         const myId = this.props.myId;
-
         // 每条消息，判断是否是自己
         const oneMessage = this.props.messages.map(function(message){
             return(
-                    <Message key={message.msgId} msgType={message.type} msgUser={message.username} action={message.action} isMe={(myId == message.uid)? true : false} time={message.time}/>
+                    <Message key={message.msgId} msgType={message.type} msgUser={message.username} 
+                    action={message.action} isMe={(myId == message.uniqueID)? true : false} time={message.time}/>
                 )
         })
         return(<div className="messages" ref="messages">{oneMessage}</div>)

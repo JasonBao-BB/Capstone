@@ -137,6 +137,24 @@ class Draw extends Component {
         this.setState({
             ctx: myCanvas.getContext("2d")
         });
+
+        socket.on('drawing', (data) => {
+            let myCanvas = this.refs.myCanvas
+            var w = myCanvas.width;
+            var h = myCanvas.height;
+
+            this.drawLine(
+                data.x0 * w,
+                data.y0 * h,
+                data.x1 * w,
+                data.y1 * h,
+                data.color,
+                data.thickness
+            );
+
+            console.log('正在移动鼠标： ' + data);
+
+        });
     }
 
     render() {

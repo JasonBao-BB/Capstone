@@ -12,6 +12,16 @@ class RoomStatus extends Component {
 
     render() {
         return(<div className="room-status">在线人数: {this.props.onlineCount}, 在线列表: {this.props.userhtml}</div>)
+        // return(
+        //     <div className='room-status'>
+        //         <div>
+        //             <p>Online User: {this.props.onlineCount}</p>
+        //         </div>
+        //         <div className='userList'>
+        //             <p>User List:xxxxxxxxxxxxx {this.props.userhtml}</p>
+        //         </div>
+        //     </div>
+        // );
     }
 }
 

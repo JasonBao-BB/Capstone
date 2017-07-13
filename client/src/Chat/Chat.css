@@ -4,7 +4,19 @@
   height: 670px;
 }
 
+.chat-room{
+  width: 280px;
+}
+
 .chatArea{
-    height: 400px;
-    max-height: 400px;
+  height: 600px;
+  margin: 0 0;
+  position: relative;
+}
+
+.chatHistory{
+  height: 500px;
+  width: 270px;
+  position: relative;
+  left: -19px;
 }

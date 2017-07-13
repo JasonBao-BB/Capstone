@@ -55,7 +55,7 @@ export default class ChatInput extends Component {
                     onKeyPress={this.handleKeyPress.bind(this)} onChange={this.handleChange.bind(this)}/>
                 </div>
                 <div className="button">
-                    <button type="button" onClick={this.handleClick.bind(this)}>提交</button>
+                    <a className="waves-effect waves-light btn" onClick={this.handleClick.bind(this)}>Enter</a>
                 </div>
             </div>
             )

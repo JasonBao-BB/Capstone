@@ -3,6 +3,7 @@ import './Guess.css';
 
 import io from 'socket.io-client';
 import Chat from '../Chat/Chat';
+import RoomStatus from '../RoomStatus/RoomStatus';
 
 class Guess extends Component {
     constructor(props) {
@@ -11,7 +12,10 @@ class Guess extends Component {
             ctx: null,
             drawing: false,
             thickness: 4,
-            color: 'black'
+            color: 'black',
+
+            uniqueID : this.props.uniqueID,
+            username : this.props.username,
         }
 
         this.drawLine = this.drawLine.bind(this);
@@ -99,21 +103,21 @@ class Guess extends Component {
     render() {
         return (
             <div className='container row'>
-                <h1>Guessing</h1>
+                <h1 className='col s12'>Guessing</h1>
 
-                <div className='keyWord col s12'><h4>What TA Drawing?</h4></div>
+                <div className='keyWord col s12'>
+                    <h4>What TA Drawing?</h4>
+                </div>
 
                 <div className='paint-area card-panel blue lighten-4 col s10'>
                     <canvas className='card-panel white col s12' ref='myCanvas'
                         width='800'
-                        height='600'
+                        height='780'
                         style={{ border: '1px solid #ccc' }}>
                     </canvas>
-                    <div className='col s12'>
+                    <div className='input-area col s12'>
                         <input placeholder="Answer" value={this.state.keyword} type="text" className="validate"
                             onChange={(e) => { this.setState({ keyword: e.target.value }) }} />
-                    </div>
-                    <div className='col s12'>
                         <a className="waves-effect waves-light btn" onClick={() => this.state.socket.emit('submit', this.state.keyword)}>Submit</a>
                     </div>
                 </div>
@@ -121,6 +125,7 @@ class Guess extends Component {
                 <div className='col s2'>
                     <Chat socket={this.state.socket} uniqueID={this.state.uniqueID} username={this.state.username}/>
                 </div>
+
             </div>
         );
     }
