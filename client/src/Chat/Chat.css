@@ -4,59 +4,7 @@
   height: 670px;
 }
 
-.banner {
-    height: 20px;
-    width: 100%;
-}
-.banner p {
-    display: inline-block;
-}
-.controls {
-    height: 100px;
-    margin: 5px 0px;
-    position: relative;
-}
-
-.historyMsg {
+.chatArea{
     height: 400px;
-    background-color: #fff;
-    overflow: auto;
-    padding: 2px;
-}
-
-.historyMsg img {
-    max-width: 99%;
-}
-/* Controller */
-.items {
-    height: 30px;
-}
-
-.colorStyle {
-    width: 50px;
-    margin-right: 10px;
-}
-.emoji{
-    display: inline;
-    margin-right: 10px;
-}
-
-/*end custom file input*/
-
-.messageInput {  
-  height: 180px;
-  background-color: white;
-}
-
-.sendBtn {
-  /* Waitting for */
-}
-
-.emojiWrapper {
-    display: none;
-    width: 500px;
-    bottom: 105px;
-    position: absolute;
-    background-color: #aaa;
-    box-shadow: 0 0 10px #555;
+    max-height: 400px;
 }

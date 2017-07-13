@@ -9,15 +9,19 @@ class Draw extends Component {
 
     constructor(props) {
         super(props);
-
         this.state = {
             ctx: null,
             drawing: false,
             thickness: 4,
             color: 'black',
             beginX: 0,
-            beginY: 0
+            beginY: 0,
+
+            uniqueID : this.props.uniqueID,
+            username : this.props.username,
         }
+
+        console.log("Draw组建里的uniquID："+ this.state.uniqueID + "username: "+ this.state.username);
 
         //this.mouseLeave = this.mouseLeave.bind(this);
         this.mouseMove = this.mouseMove.bind(this);
@@ -25,6 +29,7 @@ class Draw extends Component {
         this.mousePressUp = this.mousePressUp.bind(this);
 
         this.resetBoard = this.resetBoard.bind(this);
+        this.init = this.init.bind(this);
     }
 
     //更新数据
@@ -110,9 +115,9 @@ class Draw extends Component {
     //初始化
     init() {
         let myCanvas = this.refs.myCanvas
-        let socket;
+        let socket = this.props.socket;
 
-        socket = io('http://localhost:3000');
+        //socket = io('http://localhost:3000');
 
         this.setState({
             socket: socket
@@ -188,7 +193,7 @@ class Draw extends Component {
                 </div>
 
                 <div className='col s2'>
-                    <Chat />
+                    <Chat socket={this.state.socket} uniqueID={this.state.uniqueID} username={this.state.username}/>
                 </div>
 
 

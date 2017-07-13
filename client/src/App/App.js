@@ -19,40 +19,60 @@ class App extends Component {
         super(props);
         this.state = {
             player: 0,
-            nickname: ''
+            username: '',
+            uniqueID: '',
         }
 
-        this.submit = this.submit.bind(this);
+        //this.submit = this.submit.bind(this);
     }
 
-    componentDidMount() {
+    componentDidMount(){
         let socket = io('http://localhost:3000');
+        this.setState({
+            socket : socket
+        });
+    }
+
+
+    //随机生成一个uid
+    generateUid() {
+        return new Date().getTime() + "" + Math.floor(Math.random() * 9 + 1);
+    }
+
+    //登陆
+    handleLogin() {
+        let username = this.state.username;
+        let uniqueID = this.generateUid();
+
+        if (!username) {
+            username = 'Guest' + uniqueID;
+        }
 
         this.setState({
-            socket: socket
+            uniqueID: uniqueID,
+            username: username
         });
 
-        
-        socket.on('nickExisted', function () {
-            alert('Nickname is already exist');
+        this.state.socket.emit('login', {
+            uniqueID : uniqueID,
+            username: this.state.username,
+            
         });
 
-        socket.on('loginSuccess', function(){
-            console.log('跳转到主界面');
-        });
+        console.log('用户：'+this.state.username+this.state.uniqueID+" 进入游戏");
+    }
+    //处理点击事件
+    handleClick(e) {
+        e.preventDefault();
+        this.handleLogin();
     }
 
-    submit() {
-        let nickName = this.state.nickname;
-        ReactDOM.findDOMNode(this.refs.loginWrapper).style.border = '5px solid red';
-        ReactDOM.findDOMNode(this.refs.loginWrapper).style.display = 'none';
-        if (nickName != '') {
-            this.state.socket.emit('login', nickName);
-            console.log("发送nickName: " + nickName);
-        } else {
-            console.log('username is empty');
+    //处理键盘事件
+    handlePress(e) {
+        if (e.key == 'Enter') {
+            this.handleLogin();
         }
-
+        return false;
     }
 
     render() {
@@ -61,46 +81,47 @@ class App extends Component {
             case 1:
                 playMod = (<div className='row'>
                     <div className='leftPanel col s12'>
-                        <Draw nickName={this.state.nickname}/>
+                        <Draw uniqueID={this.state.uniqueID} username={this.state.username} socket={this.state.socket}/>
                     </div>
                 </div>)
                 break;
             case 2:
                 playMod = (<div className='row'>
                     <div className='leftPanel col s10'>
-                        <Guess nickName={this.state.nickname}/>
-                    </div>
-                    <div className='rightPanel col s2'>
-                        <Chat nickName={this.state.nickname}/>
+                        <Guess uniqueID={this.state.uniqueID} username={this.state.username} socket={this.state.socket}/>
                     </div>
                 </div>)
                 break;
             default:
-                playMod = (<div className="flex-box">
-                    <div>
-                        <h1 className='myTitle'>Drawing and Guessing</h1>
-                        <h4 className='myTitle'>Welcome, {this.state.nickname}</h4>
-                        <div className='Draw'><a className='waves-effect waves-light btn'
-                            onClick={() => this.setState({ player: 1 })} title="Want to Draw">Want to Draw</a></div>
-                        <div className='Guess'><a className='waves-effect waves-light btn'
-                            onClick={() => this.setState({ player: 2 })} title="Want to Guess">Want to Guess</a></div>
-                    </div>
+                console.log(this.state.username +' '+this.state.uid);
+                if (!this.state.uniqueID) {
+                    playMod = (
+                        <div className='loginWrapper' ref='loginWrapper'>
+                            <h1 className='info' ref='titleInfo'>Please Input Your Name: </h1>
+                            <div className='nickInfo row'>
+                                <input className='nicknameInput'
+                                    onChange={(e) => { this.setState({ username: e.target.value }) }}
+                                    onKeyPress={this.handlePress.bind(this)}
+                                    placeholder='username' />
 
-                    <div className='loginWrapper' ref='loginWrapper'>
-                        <h1 className='info' ref='titleInfo'>Please Input Your Name: </h1>
-                        <div className='nickInfo row'>
-                            <input className='nicknameInput'
-                                value={this.state.nickname}
-                                onChange={(e) => { this.setState({ nickname: e.target.value }) }}
-                                placeholder='nickname' />
-
-                            <a className="waves-effect waves-light btn"
-                                onClick={() => this.submit()}
-                            >OK</a>
+                                <a className="waves-effect waves-light btn"
+                                    onClick={this.handleClick.bind(this)}
+                                >OK</a>
+                            </div>
                         </div>
-                    </div>
-
-                </div>)
+                    )
+                } else {
+                    playMod = (
+                        <div>
+                            <h1 className='myTitle'>Drawing and Guessing</h1>
+                            <h4 className='myTitle'>Welcome, {this.state.username}</h4>
+                            <div className='Draw'><a className='waves-effect waves-light btn'
+                                onClick={() => this.setState({ player: 1 })} title="Want to Draw">Want to Draw</a></div>
+                            <div className='Guess'><a className='waves-effect waves-light btn'
+                                onClick={() => this.setState({ player: 2 })} title="Want to Guess">Want to Guess</a></div>
+                        </div>
+                    )
+                }
         }
 
         return (

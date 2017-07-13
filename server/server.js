@@ -5,9 +5,13 @@ var app = express();
 var server = require('http').createServer(app);
 var io = require('socket.io')(server);
 
-var KEYWORD = '猫';
 
-var users=[];
+var keyword = ['猫', '大象', '飞机', '钱', '炸弹', '猪'];
+var KEYWORD;
+
+//计数玩游戏有多少人
+var onlineUsers = {};
+var onlineCount = 0;
 
 app.use(express.static(path.join(__dirname, '../client/build/')));
 app.use('/static', express.static(path.join(__dirname, '../client/build/static/')));
@@ -17,8 +21,6 @@ app.get('/', function(req, res) {
 });
 
 io.on('connection', function(socket) {
-    console.log("Connecting");
-
 
     //Drawing and Guessing
     socket.on('drawing', function(data) {
@@ -27,6 +29,7 @@ io.on('connection', function(socket) {
 
     socket.on('submit', function(keyword) {
         var correct = 0;
+        console.log("正确答案: "+ KEYWORD);
         if (KEYWORD == keyword) {
             correct = 1;
         }
@@ -36,7 +39,9 @@ io.on('connection', function(socket) {
     });
 
     socket.on('message', function(message){
+
         if(message == 'getKeyWord'){
+            KEYWORD = keyword[Math.floor(Math.random() * keyword.length)];
             socket.emit('keyword', KEYWORD);
             console.log(KEYWORD);
         }else if(message == 'clear'){
@@ -44,24 +49,56 @@ io.on('connection', function(socket) {
         }
     });
 
-    //Disconnect
-    socket.on('disconnect', function() {
-        users.splice(socket.usersIndex,1);
-        socket.broadcast.emit('system', socket.nickname, users.length, 'logout');
+    //Login
+    socket.on('login', function(obj){
+        console.log(obj);
+        // 用户id设为socketid
+        socket.id = obj.uniqueID;
+        console.log("用户的id是"+ obj.uniqueID);
+        // 如果没有这个用户，那么在线人数+1，将其添加进在线用户
+
+        if (!onlineUsers.hasOwnProperty(obj.uniqueID)) {
+            onlineUsers[obj.uniqueID] = obj.username;
+            onlineCount++;
+            console.log("新添加一个用户"+onlineUsers[obj.uniqueID] + ' 当前人数'+onlineCount);
+        }
+        // 向客户端发送登陆事件，同时发送在线用户、在线人数以及登陆用户
+        
+        io.sockets.emit('login', {
+            onlineUsers : onlineUsers, 
+            onlineCount : onlineCount, 
+            user : obj
+        });
+        console.log(onlineCount + onlineUsers);
+        console.log(obj.username+'加入了群聊');
     });
 
-    //Login
-    socket.on('login', function(nickname){
-        console.log('接收到用户信息');
-        if(users.indexOf(nickname) > -1) {
-            socket.emit('nickExisted');
-        } else {
-            socket.usersIndex = users.length;
-            socket.nickname = nickname;
-            users.push(nickname);
-            socket.emit('loginSuccess');
-            io.sockets.emit('system', nickname, users.length, 'login');
-        };
+
+    //Chat message
+    socket.on('chatmessage', function(obj){
+        io.emit('chatmessage', obj);
+        console.log(obj.username+"说:"+ obj.message);
+    });
+
+     //Disconnect
+    socket.on('disconnect', function() {
+        if (onlineUsers.hasOwnProperty(socket.id)) {
+            var user = {
+                uniqueID : socket.id,
+                username : onlineUsers[socket.id]
+            };
+
+            delete onlineUsers[socket.id];
+            onlineCount--;
+
+            io.emit('logout', {
+                onlineUsers : onlineUsers,
+                onlineCount : onlineCount,
+                user : user
+            });
+
+            console.log(user.username + " quit the game");
+        }
     });
 });
 

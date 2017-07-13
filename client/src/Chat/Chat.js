@@ -1,69 +1,129 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
+
 import './Chat.css';
+
+import RoomStatus from '../RoomStatus/RoomStatus';
+import Messages from '../Messages/Messages';
+import ChatInput from '../ChatInput/ChatInput';
 
 import io from 'socket.io-client';
 
-class Chat extends Component {
-
+export default class ChatRoom extends Component {
     constructor(props) {
         super(props);
-
+        const socket = this.props.socket;
         this.state = {
-            historyMsg : ReactDOM.findDOMNode(this.refs.historyMsg),
-            statue : ReactDOM.findDOMNode(this.refs.statue),
+            myId: this.props.uniqueID,
+            myName: this.props.username,
+            uniqueID: this.props.uniqueID,
+            username: this.props.username,
+            socket: io('http://localhost:3000'),
+            messages: [],
+            onlineUsers: {},
+            onlineCount: 0,
+            userhtml: '',
         }
-
-        //this.componentDidMount = this.componentDidMount.bind(this);
+        
     }
 
     componentDidMount() {
-        let socket = io('http://localhost:3000');
+        this.ready();
+    }
+
+    // 处理在线人数及用户名
+    handleUsers() {
+        const users = this.state.onlineUsers;
+        let userhtml = '';
+        let separator = '';
+        for (let key in users) {
+            if (users.hasOwnProperty(key)) {
+                userhtml += separator + users[key];
+                separator = '、';
+            }
+        }
+        this.setState({ userhtml: userhtml })
+    }
+
+    // 生成消息id
+    generateMsgId() {
+        return new Date().getTime() + "" + Math.floor(Math.random() * 899 + 100);
+    }
+
+    // 更新系统消息
+    updateSysMsg(o, action) {
+        let messages = this.state.messages;
+        const newMsg = {
+            type: 'system',
+            username: o.user.username,
+            uniqueID: o.user.uniqueID,
+            action: action,
+            msgId: this.generateMsgId(),
+            time: this.generateTime()
+        }
+        messages = messages.concat(newMsg)
+
         this.setState({
-            socket: socket
+            onlineCount: o.onlineCount,
+            onlineUsers: o.onlineUsers,
+            messages: messages
         });
+        this.handleUsers();
+    }
 
-        const node1 = ReactDOM.findDOMNode(this.refs.historyMsg);
-        const node2 = ReactDOM.findDOMNode(this.refs.statue);
+    // 发送新消息
+    updateMsg(obj) {
+        let messages = this.state.messages;
+        const newMsg = {
+            type: 'chat',
+            username: obj.username,
+            uniqueID: obj.uniqueID,
+            action: obj.message,
+            msgId: this.generateMsgId(),
+            time: this.generateTime()
+        };
+        messages = messages.concat(newMsg);
+        this.setState({ messages: messages })
+    }
 
-        socket.on('system', function (nickName, userCount, type) {
-            
+    // 生成时间
+    generateTime() {
+        let hour = new Date().getHours(),
+            minute = new Date().getMinutes();
+        hour = (hour == 0) ? '00' : hour;
+        minute = (minute < 10) ? '0' + minute : minute;
+        return hour + ':' + minute;
+    }
 
-            console.log(node1);
-            console.log(node2);
-            //判断用户是连接还是离开以显示不同的信息
-            let msg = nickName + (type == 'login' ? ' joined' : ' left');
-            //创建了一个p元素
-            let p = React.createElement('p', null, msg);
-            //把p元素append到聊天框内
-            ReactDOM.findDOMNode(this.refs.historyMsg).appendChild(p);   
-            
-        });
+    handleLogout() {
+        this.location.reload();
+    }
+    // 开始监控socket
+    ready() {
+        const socket = this.state.socket;
+        socket.on('login', (obj) => {
+            this.updateSysMsg(obj, 'login');
+        })
+        socket.on('logout', (obj) => {
+            this.updateSysMsg(obj, 'logout');
+        })
+        socket.on('chatmessage', (obj) => {
+            this.updateMsg(obj)
+        })
     }
 
     render() {
         return (
-            <div className='wrapper card-panel blue lighten-4'>
-                <div className='banner'>
-                    <span className='statue' ref='statue'>当前在线:10人</span>
+            <div className="chat-room">
+                <div className="welcome">
+                    <div className="room-name">Welcome, {this.state.myName}</div>
+                    <button onClick={this.handleLogout.bind(this)}>logout</button>
                 </div>
-                <div className='historyMsg' ref='hostoryMsg'></div>
-                <div className='controls'>
-                    <div className="items">
-                        <input className="colorStyle" type="color" placeholder='#000' title="font color" />
-                        <input className="emoji" type="button" value="emoji" title="emoji" />
-                        <input className="clearBtn" type="button" value="clear" title="clear screen" />
-                    </div>
-
-                    <textarea className='messageInput' placeholder='enter to send'></textarea>
-                    <input type='button' className='sendBtn' value='SEND' />
-
-                    <div className='emojiWrapper'></div>
-
+                <RoomStatus onlineCount={this.state.onlineCount} userhtml={this.state.userhtml} />
+                <div ref="chatArea">
+                    <Messages messages={this.state.messages} myId={this.state.myId} />
+                    <ChatInput myId={this.state.myId} myName={this.state.myName} socket={this.state.socket} />
                 </div>
-            </div>
-        )
+            </div>)
     }
 }
-
-export default Chat;

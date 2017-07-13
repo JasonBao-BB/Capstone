@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import './Guess.css';
 
 import io from 'socket.io-client';
+import Chat from '../Chat/Chat';
 
 class Guess extends Component {
     constructor(props) {
@@ -14,6 +15,7 @@ class Guess extends Component {
         }
 
         this.drawLine = this.drawLine.bind(this);
+        this.init = this.init.bind(this);
     }
 
     componentDidMount() {
@@ -38,13 +40,13 @@ class Guess extends Component {
 
     init() {
         let myCanvas = this.refs.myCanvas
-        var socket;
+        var socket = this.props.socket;
 
         this.setState({
             ctx: myCanvas.getContext("2d")
         });
 
-        socket = io('http://localhost:3000');
+        //socket = io('http://localhost:3000');
         this.setState({
             socket: socket
         });
@@ -101,19 +103,23 @@ class Guess extends Component {
 
                 <div className='keyWord col s12'><h4>What TA Drawing?</h4></div>
 
-                <canvas className='card-panel white col s12' ref='myCanvas'
-                    width='800'
-                    height='600'
-                    style={{ border: '1px solid #ccc' }}>
-                </canvas>
-
-                <div className='col s12'>
-                    <input placeholder="Answer" value={this.state.keyword} type="text" className="validate"
-                        onChange={(e) => { this.setState({ keyword: e.target.value }) }} />
+                <div className='paint-area card-panel blue lighten-4 col s10'>
+                    <canvas className='card-panel white col s12' ref='myCanvas'
+                        width='800'
+                        height='600'
+                        style={{ border: '1px solid #ccc' }}>
+                    </canvas>
+                    <div className='col s12'>
+                        <input placeholder="Answer" value={this.state.keyword} type="text" className="validate"
+                            onChange={(e) => { this.setState({ keyword: e.target.value }) }} />
+                    </div>
+                    <div className='col s12'>
+                        <a className="waves-effect waves-light btn" onClick={() => this.state.socket.emit('submit', this.state.keyword)}>Submit</a>
+                    </div>
                 </div>
 
-                <div className='col s12'>
-                    <a className="waves-effect waves-light btn" onClick={() => this.state.socket.emit('submit', this.state.keyword)}>Submit</a>
+                <div className='col s2'>
+                    <Chat socket={this.state.socket} uniqueID={this.state.uniqueID} username={this.state.username}/>
                 </div>
             </div>
         );
