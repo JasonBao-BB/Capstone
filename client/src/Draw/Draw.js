@@ -10,13 +10,12 @@ class Draw extends Component {
     constructor(props) {
         super(props);
         this.state = {
+            myCanvas : null,
             ctx: null,
             drawing: false,
             thickness: 4,
             color: 'black',
-            beginX: 0,
-            beginY: 0,
-
+            
             uniqueID : this.props.uniqueID,
             username : this.props.username,
         }
@@ -41,13 +40,8 @@ class Draw extends Component {
     mousePressDown(e) {
         this.setState({
             drawing: true,
-        });
-        //this.state.ctx.x = e.clientX;
-        //this.state.ctx.y = e.clientY;
-
-        this.setState({
-            beginX: e.clientX,
-            beginY: e.clientY
+            currentX: e.pageX,
+            currentY: e.pageY
         });
     }
     //松开鼠标
@@ -55,12 +49,11 @@ class Draw extends Component {
         if (!this.state.drawing) {
             return;
         }
-        //this.state.drawing = false;
         this.setState({
             drawing: false
         });
-        //this.drawLine(this.state.ctx.x, this.state.ctx.y, e.clientX, e.clientY, this.state.color,this.state.thickness, true);
-        this.drawLine(this.state.beginX, this.state.beginY, e.clientX, e.clientY, this.state.color, this.state.thickness, true);
+        this.drawLine(this.state.currentX, this.state.currentY, e.pageX, e.pageY, this.state.color,this.state.thickness, true);
+        //this.drawLine(this.state.beginX, this.state.beginY, e.pageX - e.target.offsetLeft, e.pageX - e.target.offset, this.state.color, this.state.thickness, true);
     }
 
     //移动鼠标
@@ -68,19 +61,21 @@ class Draw extends Component {
         if (!this.state.drawing) {
             return;
         }
-        //this.drawLine(this.state.ctx.x, this.state.ctx.y, e.clientX, e.clientY, this.state.color,this.state.thickness, true);
-        this.drawLine(this.state.beginX, this.state.beginY, e.clientX, e.clientY, this.state.color, this.state.thickness, true);
+        this.drawLine(this.state.currentX, this.state.currentY, e.pageX, e.pageY, this.state.color,this.state.thickness, true);
+        //this.drawLine(this.state.beginX, this.state.beginY, e.pageX - e.target.offsetLeft, e.pageX - e.target.offsetLeft, this.state.color, this.state.thickness, true);
         //this.state.ctx.x = e.clientX;
         //this.state.ctx.y = e.clientY;
         this.setState({
-            beginX: e.clientX,
-            beginY: e.clientY
+            currentX: e.pageX,
+            currentY: e.pageY
         });
     }
     //画线
     drawLine(x0, y0, x1, y1, color, thickness, emit) {
         this.state.ctx.beginPath();
+        //起点
         this.state.ctx.moveTo(x0, y0);
+        //终点
         this.state.ctx.lineTo(x1, y1);
         this.state.ctx.strokeStyle = color;
         this.state.ctx.lineWidth = thickness;
@@ -113,9 +108,12 @@ class Draw extends Component {
         this.state.socket.send('clear');
     }
     //初始化
-    init() {
+    init(e) {
         let myCanvas = this.refs.myCanvas
         let socket = this.props.socket;
+
+        myCanvas.width = window.innerWidth;
+        myCanvas.height = window.innerHeight;
 
         //socket = io('http://localhost:3000');
 
@@ -134,14 +132,16 @@ class Draw extends Component {
             console.log('设置的关键字为: ' + keyword);
         });
 
+        //设置ctx
         this.setState({
-            ctx: myCanvas.getContext("2d")
+            ctx: myCanvas.getContext("2d"),
+            myCanvas : myCanvas
         });
 
         socket.on('drawing', (data) => {
-            let myCanvas = this.refs.myCanvas
-            var w = myCanvas.width;
-            var h = myCanvas.height;
+            //let myCanvas = this.refs.myCanvas
+            var w = this.state.myCanvas.width;
+            var h = this.state.myCanvas.height;
 
             this.drawLine(
                 data.x0 * w,
